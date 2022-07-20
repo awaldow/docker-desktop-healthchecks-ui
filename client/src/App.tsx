@@ -50,11 +50,9 @@ export function App() {
             FailingStreak: healthCheckJson.FailingStreak,
             Log: healthCheckJson.Log,
           };
-          console.log('adding container to containerHealthCheckInfos: ' + containerInfo);
           containerHealthCheckInfos.push(containerInfo);
         }
       }
-      console.log(containerHealthCheckInfos.length);
       setContainerHealthCheckInfoList(containerHealthCheckInfos);
     });
   }
@@ -66,8 +64,6 @@ export function App() {
   function Row(props: { row: ContainerHealthCheckInfo }) {
     const { row } = props;
     const [open, setOpen] = useState(false);
-
-    console.log(row);
 
     return (
       <React.Fragment>
@@ -84,9 +80,9 @@ export function App() {
           <TableCell component="th" scope="row">
             {row.Name}
           </TableCell>
-          <TableCell align="right">{row.ID}</TableCell>
-          <TableCell align="right">{row.ContainerStatus}</TableCell>
-          <TableCell align="right">{row.FailingStreak}</TableCell>
+          <TableCell>{row.ID}</TableCell>
+          <TableCell>{row.ContainerStatus}</TableCell>
+          <TableCell>{row.FailingStreak}</TableCell>
         </TableRow>
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -107,8 +103,8 @@ export function App() {
                   <TableBody>
                     {row.Log.map((healthCheckLog) => (
                       <TableRow key={healthCheckLog.Start}>
-                        <TableCell component="th" scope="row">{healthCheckLog.Start}</TableCell>
-                        <TableCell>{healthCheckLog.End}</TableCell>
+                        <TableCell component="th" scope="row">{new Date(healthCheckLog.Start).toLocaleString()}</TableCell>
+                        <TableCell>{new Date(healthCheckLog.End).toLocaleString()}</TableCell>
                         <TableCell>{healthCheckLog.ExitCode}</TableCell>
                         <TableCell>{healthCheckLog.Output}</TableCell>
                       </TableRow>
@@ -123,16 +119,16 @@ export function App() {
     );
   }
 
-  console.log(containerHealthCheckInfoList);
-
   return (
     <Stack
       display="flex"
       flexGrow={1}
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
+      justifyContent="flex-start"
+      alignItems="flex-start"
+      height="100%"
     >
+      <Typography variant="h2">Healthchecks</Typography>
+      <Typography variant="caption" color="secondary">View Dockerfile HEALTHCHECK results from running containers</Typography>
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>
@@ -143,9 +139,9 @@ export function App() {
                 </IconButton>
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell align="right">ID</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right">Failing Streak</TableCell>
+              <TableCell>ID</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Failing Streak</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
