@@ -150,7 +150,7 @@ export function App() {
           </TableHead>
           <TableBody>
             {containerHealthCheckInfoList.map((container: ContainerHealthCheckInfo) => (
-              <Row key={container.Name} row={container} />
+              <Row key={container.ID} row={container} />
             ))}
           </TableBody>
         </Table>
