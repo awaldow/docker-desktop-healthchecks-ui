@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/usr/local/share/.cache/yarn-${TARGETARCH} yarn bu
 
 FROM scratch
 
-LABEL org.opencontainers.image.title="Docker Desktop HealthChecks UI" \
+LABEL org.opencontainers.image.title="HealthChecks UI" \
     org.opencontainers.image.description="A Docker Desktop Extension to surface container Healthchecks" \
     org.opencontainers.image.vendor="Addison Waldow" \
     com.docker.desktop.extension.api.version=">= 0.2.0" \

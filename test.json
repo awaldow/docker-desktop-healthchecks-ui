@@ -1,0 +1,12 @@
+{
+    "Status": "starting",
+    "FailingStreak": 1,
+    "Log": [
+        {
+            "Start": "2022-07-20T02:45:15.21795169Z",
+            "End": "2022-07-20T02:45:16.866063161Z",
+            "ExitCode": 1,
+            "Output": "{\"status\":\"Unhealthy\",\"totalDuration\":\"00:00:01.5184717\",\"entries\":{\"PerDiemContext\":{\"data\":{},\"duration\":\"00:00:01.2105834\",\"status\":\"Unhealthy\",\"tags\":[\"database\",\"ready\"]}}}"
+        }
+    ]
+}
