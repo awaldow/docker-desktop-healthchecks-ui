@@ -1,6 +1,5 @@
 import {
   Paper,
-  Button,
   Stack,
   Typography,
   Table,
@@ -16,6 +15,7 @@ import {
 import {
   KeyboardArrowDown,
   KeyboardArrowUp,
+  Refresh,
 } from '@mui/icons-material';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
 import React, { useEffect, useState } from 'react';
@@ -25,42 +25,49 @@ export function App() {
   const ddClient = createDockerDesktopClient();
   const [containerHealthCheckInfoList, setContainerHealthCheckInfoList] = useState<ContainerHealthCheckInfo[]>([]);
 
-  async function getContainerHealthCheckInfoList() { 
-    const containers = await ddClient.docker.cli.exec('container', [
+  async function getContainerHealthCheckInfoList() {
+    ddClient.docker.cli.exec('container', [
       'ls',
       '-a',
       '--format',
       '"{{json .}}"',
-    ]);
-    let json = await containers.parseJsonLines();
-    const containerHealthCheckInfos: ContainerHealthCheckInfo[] = [];
-    json.forEach(async (container: any) => {
-      let healthCheck = await ddClient.docker.cli.exec('inspect', [
-        container.ID,
-        '--format',
-        '"{{json .State.Health}}"',
-      ]);
-      let healthCheckJson = await healthCheck.parseJsonObject();
-      if (healthCheckJson != null) {
-        let containerInfo: ContainerHealthCheckInfo = {
-          Name: container.Names,
-          ID: container.ID,
-          ContainerStatus: container.Status,
-          Status: healthCheckJson.Status,
-          FailingStreak: healthCheckJson.FailingStreak,
-          Log: healthCheckJson.Log,
-        };
-        console.log('adding container to containerHealthCheckInfos: ' + containerInfo);
-        containerHealthCheckInfos.push(containerInfo);
+    ]).then(async (containerList) => {
+      let json = containerList.parseJsonLines();
+      let containerHealthCheckInfos: ContainerHealthCheckInfo[] = [];
+      for (let container of json) {
+        let healthCheckInfo = await ddClient.docker.cli.exec('inspect', [
+          container.ID,
+          '--format',
+          '"{{json .State.Health}}"',
+        ]);
+        let healthCheckJson = healthCheckInfo.parseJsonObject();
+        if (healthCheckJson != null) {
+          let containerInfo: ContainerHealthCheckInfo = {
+            Name: container.Names,
+            ID: container.ID,
+            ContainerStatus: container.Status,
+            Status: healthCheckJson.Status,
+            FailingStreak: healthCheckJson.FailingStreak,
+            Log: healthCheckJson.Log,
+          };
+          console.log('adding container to containerHealthCheckInfos: ' + containerInfo);
+          containerHealthCheckInfos.push(containerInfo);
+        }
       }
+      console.log(containerHealthCheckInfos.length);
+      setContainerHealthCheckInfoList(containerHealthCheckInfos);
     });
-    console.log(containerHealthCheckInfos.length);
-    setContainerHealthCheckInfoList(containerHealthCheckInfos);
   }
+
+  useEffect(() => {
+    getContainerHealthCheckInfoList();
+  }, []);
 
   function Row(props: { row: ContainerHealthCheckInfo }) {
     const { row } = props;
     const [open, setOpen] = useState(false);
+
+    console.log(row);
 
     return (
       <React.Fragment>
@@ -126,31 +133,28 @@ export function App() {
       alignItems="center"
       height="100vh"
     >
-      <Button variant="contained" onClick={getContainerHealthCheckInfoList}>
-        Get Health Check Info
-      </Button>
-      {containerHealthCheckInfoList ? (
-        <TableContainer component={Paper}>
-          <Table aria-label="">
-            <TableHead>
-              <TableRow>
-                <TableCell />
-                <TableCell>Name</TableCell>
-                <TableCell align="right">ID</TableCell>
-                <TableCell align="right">Status</TableCell>
-                <TableCell align="right">Failing Streak</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {containerHealthCheckInfoList.map((container: ContainerHealthCheckInfo) => (
-                <Row key={container.Name} row={container} />
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        ''
-      )}
+      <TableContainer component={Paper}>
+        <Table aria-label="collapsible table">
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <IconButton onClick={getContainerHealthCheckInfoList}>
+                  <Refresh />
+                </IconButton>
+              </TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">ID</TableCell>
+              <TableCell align="right">Status</TableCell>
+              <TableCell align="right">Failing Streak</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {containerHealthCheckInfoList.map((container: ContainerHealthCheckInfo) => (
+              <Row key={container.Name} row={container} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Stack>
   );
 }
