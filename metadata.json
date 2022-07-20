@@ -1,0 +1,10 @@
+{
+    "icon": "healthchecks-ui.svg",
+    "ui": {
+      "dashboard-tab": {
+        "title": "HealthChecks UI",
+        "root": "/ui",
+        "src": "index.html"
+      }
+    }
+  }
