@@ -22,8 +22,10 @@ import React, { useEffect, useState } from 'react';
 import { ContainerHealthCheckInfo, HealthCheckEntry } from './ContainerHealthCheckInfo';
 
 export function App() {
+  const REFRESH_INTERVAL = 5000;
   const ddClient = createDockerDesktopClient();
   const [containerHealthCheckInfoList, setContainerHealthCheckInfoList] = useState<ContainerHealthCheckInfo[]>([]);
+  const [rowOpenStates, setRowOpenStates] = useState<{ [key: string]: boolean }>({});
 
   async function getContainerHealthCheckInfoList() {
     ddClient.docker.cli.exec('container', [
@@ -48,7 +50,16 @@ export function App() {
             ContainerStatus: container.Status,
             Status: healthCheckJson.Status,
             FailingStreak: healthCheckJson.FailingStreak,
-            Log: healthCheckJson.Log,
+            Log: healthCheckJson.Log.map((logEntry: any) => {
+              return {
+                Start: new Date(logEntry.Start),
+                End: new Date(logEntry.End),
+                ExitCode: logEntry.ExitCode,
+                Output: logEntry.Output,
+              };
+            }).sort((a: HealthCheckEntry, b: HealthCheckEntry) => {
+              return b.Start.getTime() - a.Start.getTime();
+            }),
           };
           containerHealthCheckInfos.push(containerInfo);
         }
@@ -61,9 +72,15 @@ export function App() {
     getContainerHealthCheckInfoList();
   }, []);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      getContainerHealthCheckInfoList();
+    }, REFRESH_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, [containerHealthCheckInfoList]);
+
   function Row(props: { row: ContainerHealthCheckInfo }) {
     const { row } = props;
-    const [open, setOpen] = useState(false);
 
     return (
       <React.Fragment>
@@ -72,9 +89,11 @@ export function App() {
             <IconButton
               aria-label="expand row"
               size="small"
-              onClick={() => setOpen(!open)}
+              onClick={() => {
+                setRowOpenStates({ ...rowOpenStates, [row.ID]: !rowOpenStates[row.ID] });
+              }}
             >
-              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+              {rowOpenStates[row.ID] ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
             </IconButton>
           </TableCell>
           <TableCell component="th" scope="row">
@@ -86,7 +105,7 @@ export function App() {
         </TableRow>
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-            <Collapse in={open} timeout="auto" unmountOnExit>
+            <Collapse in={rowOpenStates[row.ID]} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
                 <Typography variant="h6" gutterBottom component="div">
                   Log
@@ -102,9 +121,9 @@ export function App() {
                   </TableHead>
                   <TableBody>
                     {row.Log.map((healthCheckLog) => (
-                      <TableRow key={healthCheckLog.Start}>
-                        <TableCell component="th" scope="row">{new Date(healthCheckLog.Start).toLocaleString()}</TableCell>
-                        <TableCell>{new Date(healthCheckLog.End).toLocaleString()}</TableCell>
+                      <TableRow key={healthCheckLog.Start.toLocaleString()}>
+                        <TableCell component="th" scope="row">{healthCheckLog.Start.toLocaleString()}</TableCell>
+                        <TableCell>{healthCheckLog.End.toLocaleString()}</TableCell>
                         <TableCell>{healthCheckLog.ExitCode}</TableCell>
                         <TableCell>{healthCheckLog.Output}</TableCell>
                       </TableRow>
@@ -128,7 +147,7 @@ export function App() {
       height="100%"
     >
       <Typography variant="h2">Healthchecks</Typography>
-      <Typography variant="caption" color="secondary">View Dockerfile HEALTHCHECK results from running containers</Typography>
+      <Typography variant="caption" color="textPrimary">View Dockerfile HEALTHCHECK results from running containers</Typography>
       <TableContainer component={Paper}>
         <Table aria-label="collapsible table">
           <TableHead>

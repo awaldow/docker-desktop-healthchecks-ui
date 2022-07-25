@@ -8,8 +8,8 @@ export interface ContainerHealthCheckInfo {
 }
 
 export interface HealthCheckEntry {
-    Start: string;
-    End: string;
+    Start: Date;
+    End: Date;
     ExitCode: number;
     Output: string;
 }
