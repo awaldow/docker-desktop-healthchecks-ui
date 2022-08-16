@@ -2,7 +2,7 @@
     "icon": "healthchecks-ui.svg",
     "ui": {
       "dashboard-tab": {
-        "title": "HealthChecks UI",
+        "title": "Healthchecks",
         "root": "/ui",
         "src": "index.html"
       }

@@ -26,6 +26,7 @@ export function App() {
   const ddClient = createDockerDesktopClient();
   const [containerHealthCheckInfoList, setContainerHealthCheckInfoList] = useState<ContainerHealthCheckInfo[]>([]);
   const [rowOpenStates, setRowOpenStates] = useState<{ [key: string]: boolean }>({});
+  const [error, setError] = useState<string | null>(null);
 
   async function getContainerHealthCheckInfoList() {
     ddClient.docker.cli.exec('container', [
@@ -65,7 +66,7 @@ export function App() {
         }
       }
       setContainerHealthCheckInfoList(containerHealthCheckInfos);
-    });
+    }).catch((error) => { setError(error); });
   }
 
   useEffect(() => {
