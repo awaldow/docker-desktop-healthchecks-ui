@@ -146,10 +146,10 @@ export function App() {
       alignItems="flex-start"
       height="100%"
     >
-      <Typography variant="h2">Healthchecks</Typography>
+      <Typography variant="h3">Healthchecks</Typography>
       <Typography variant="caption" color="textPrimary">View Dockerfile HEALTHCHECK results from running containers</Typography>
       <TableContainer component={Paper}>
-        <Table aria-label="collapsible table">
+        <Table stickyHeader aria-label="collapsible table">
           <TableHead>
             <TableRow>
               <TableCell>

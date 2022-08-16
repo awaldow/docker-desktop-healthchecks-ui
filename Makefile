@@ -9,6 +9,12 @@ NO_COLOR   = \033[m
 build-extension: ## Build service image to be deployed as a desktop extension
 	docker build --tag=$(IMAGE):$(TAG) .
 
+validate-extension:
+	docker extension validate $(IMAGE):$(TAG)
+
+build-and-validate-extension: build-extension
+	docker extension validate $(IMAGE):$(TAG)
+	
 install-extension: build-extension ## Install the extension
 	docker extension install $(IMAGE):$(TAG)
 
